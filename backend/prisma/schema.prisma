@@ -1,0 +1,122 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Step 1: Aadhaar Information
+  aadhaarNumber String  @unique @db.VarChar(12)
+  aadhaarVerified Boolean @default(false)
+  aadhaarVerifiedAt DateTime?
+
+  // Step 2: PAN Information  
+  panNumber String @unique @db.VarChar(10)
+  panVerified Boolean @default(false)
+  panVerifiedAt DateTime?
+  nameAsPerPan String @db.VarChar(100)
+
+  // Form submissions
+  formSubmissions FormSubmission[]
+  otpVerifications OtpVerification[]
+
+  @@map("users")
+}
+
+model FormSubmission {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // User reference
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Form step information
+  step Int // 1 for Aadhaar, 2 for PAN
+  status FormStatus @default(PENDING)
+  
+  // Form data (JSON field for flexibility)
+  formData Json
+  
+  // Validation results
+  validationErrors Json?
+  
+  // Submission metadata
+  ipAddress String?
+  userAgent String?
+  
+  @@map("form_submissions")
+}
+
+model OtpVerification {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // User reference
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // OTP details
+  otpCode String @db.VarChar(6)
+  otpHash String // Hashed version for security
+  
+  // Verification status
+  isVerified Boolean @default(false)
+  verifiedAt DateTime?
+  
+  // Expiry and attempts
+  expiresAt DateTime
+  attempts Int @default(0)
+  maxAttempts Int @default(3)
+  
+  // Purpose (aadhaar_verification, etc.)
+  purpose String @db.VarChar(50)
+
+  @@map("otp_verifications")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  // User reference (optional for system events)
+  userId String?
+  
+  // Action details
+  action String @db.VarChar(100)
+  resource String @db.VarChar(100)
+  resourceId String?
+  
+  // Request details
+  ipAddress String?
+  userAgent String?
+  
+  // Additional data
+  metadata Json?
+  
+  // Status
+  success Boolean @default(true)
+  errorMessage String?
+
+  @@map("audit_logs")
+}
+
+enum FormStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+  EXPIRED
+}

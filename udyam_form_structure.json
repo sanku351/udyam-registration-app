@@ -1,0 +1,97 @@
+{
+  "steps": [
+    {
+      "step": 1,
+      "title": "Aadhaar Verification",
+      "fields": [
+        {
+          "name": "aadhaar",
+          "type": "text",
+          "label": "Aadhaar Number",
+          "required": true,
+          "maxLength": 12,
+          "pattern": "^[0-9]{12}$",
+          "placeholder": "Enter 12-digit Aadhaar number"
+        },
+        {
+          "name": "otp",
+          "type": "text",
+          "label": "OTP",
+          "required": true,
+          "maxLength": 6,
+          "pattern": "^[0-9]{6}$",
+          "placeholder": "Enter 6-digit OTP"
+        }
+      ]
+    },
+    {
+      "step": 2,
+      "title": "PAN Verification",
+      "fields": [
+        {
+          "name": "pan",
+          "type": "text",
+          "label": "PAN Number",
+          "required": true,
+          "maxLength": 10,
+          "pattern": "^[A-Za-z]{5}[0-9]{4}[A-Za-z]{1}$",
+          "placeholder": "Enter PAN number (e.g., ABCDE1234F)"
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "label": "Name as per PAN",
+          "required": true,
+          "maxLength": 100,
+          "placeholder": "Enter name as per PAN card"
+        }
+      ]
+    }
+  ],
+  "validation_rules": {
+    "aadhaar": {
+      "pattern": "^[0-9]{12}$",
+      "message": "Aadhaar number must be 12 digits"
+    },
+    "pan": {
+      "pattern": "^[A-Za-z]{5}[0-9]{4}[A-Za-z]{1}$",
+      "message": "PAN must be in format: 5 letters, 4 digits, 1 letter"
+    },
+    "otp": {
+      "pattern": "^[0-9]{6}$",
+      "message": "OTP must be 6 digits"
+    },
+    "name": {
+      "pattern": "^[a-zA-Z\\s]{2,100}$",
+      "message": "Name must contain only letters and spaces"
+    }
+  },
+  "ui_components": {
+    "buttons": [
+      {
+        "type": "submit",
+        "text": "Generate OTP",
+        "step": 1
+      },
+      {
+        "type": "submit",
+        "text": "Verify OTP",
+        "step": 1
+      },
+      {
+        "type": "submit",
+        "text": "Verify PAN",
+        "step": 2
+      },
+      {
+        "type": "button",
+        "text": "Next",
+        "step": 2
+      }
+    ],
+    "progress_indicator": {
+      "total_steps": 2,
+      "step_labels": ["Aadhaar Verification", "PAN Verification"]
+    }
+  }
+}
