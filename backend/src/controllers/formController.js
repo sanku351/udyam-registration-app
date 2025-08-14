@@ -134,7 +134,7 @@ class FormController {
   // Verify PAN
   async verifyPan(req, res, next) {
     try {
-      const { panNumber, nameAsPerPan } = req.validatedData
+      const { panNumber, nameAsPerPan, userId } = req.validatedData
 
       // In a real application, you would verify PAN with government API
       // For demo purposes, we'll simulate verification
@@ -147,14 +147,23 @@ class FormController {
         })
       }
 
-      // Check if user exists with this PAN
-      let user = await prisma.user.findUnique({
-        where: { panNumber },
-      })
+      let user
 
-      if (!user) {
-        // Create new user with PAN details
-        user = await prisma.user.create({
+      if (userId) {
+        user = await prisma.user.findUnique({
+          where: { id: userId },
+        })
+
+        if (!user) {
+          return res.status(404).json({
+            success: false,
+            message: "User not found",
+          })
+        }
+
+        // Update existing user with PAN details
+        user = await prisma.user.update({
+          where: { id: user.id },
           data: {
             panNumber,
             nameAsPerPan,
@@ -163,15 +172,33 @@ class FormController {
           },
         })
       } else {
-        // Update existing user
-        user = await prisma.user.update({
-          where: { id: user.id },
-          data: {
-            nameAsPerPan,
-            panVerified: true,
-            panVerifiedAt: new Date(),
-          },
+        // Check if user exists with this PAN
+        user = await prisma.user.findUnique({
+          where: { panNumber },
         })
+
+        if (!user) {
+          user = await prisma.user.create({
+            data: {
+              panNumber,
+              nameAsPerPan,
+              panVerified: true,
+              panVerifiedAt: new Date(),
+              // Generate a temporary aadhaarNumber to satisfy unique constraint
+              aadhaarNumber: `temp_${Date.now()}`,
+            },
+          })
+        } else {
+          // Update existing user
+          user = await prisma.user.update({
+            where: { id: user.id },
+            data: {
+              nameAsPerPan,
+              panVerified: true,
+              panVerifiedAt: new Date(),
+            },
+          })
+        }
       }
 
       // Log the action

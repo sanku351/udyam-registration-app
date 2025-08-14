@@ -21,10 +21,10 @@ model User {
   aadhaarVerifiedAt DateTime?
 
   // Step 2: PAN Information  
-  panNumber String @unique @db.VarChar(10)
+  panNumber String? @unique @db.VarChar(10)
   panVerified Boolean @default(false)
   panVerifiedAt DateTime?
-  nameAsPerPan String @db.VarChar(100)
+  nameAsPerPan String? @db.VarChar(100)
 
   // Form submissions
   formSubmissions FormSubmission[]
